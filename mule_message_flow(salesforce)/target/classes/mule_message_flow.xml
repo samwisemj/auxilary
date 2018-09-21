@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+      <flow name="mule_message_flowFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/hello" doc:name="HTTP"/>
+        <flow-ref name="SubFlow1" doc:name="Flow Reference(Subflow 1)"/>
+        <flow-ref name="SubFlow2" doc:name="Flow Reference(SubFlow 2)"/>
+        <vm:outbound-endpoint exchange-pattern="request-response" path="vmFlow" doc:name="VM"/>
+        <logger message="Name:#[message.inboundProperties.qpname] Type:#[flowVars.qptype] Colour:#[sessionVars.color] Messageis #[payload.toString()]" level="WARN" doc:name="Logger"/>
+    </flow>
+    <flow name="flow2">
+        <vm:inbound-endpoint exchange-pattern="request-response" path="vmFlow" doc:name="VM"/>
+        <set-payload value="Goodbye" doc:name="Set Payload"/>
+        <logger level="INFO" doc:name="Logger"/>
+    </flow>
+    <sub-flow name="SubFlow2">
+        <set-variable variableName="qptype" value="#[message.inboundProperties.'http.query.params'.type]" doc:name="Variable"/>
+        <set-session-variable variableName="color" value="gray" doc:name="Session Variable"/>
+    </sub-flow>
+    <sub-flow name="SubFlow1">
+        <set-payload value="#[&quot;Hello World&quot;.toUpperCase()]" doc:name="Set Payload"/>
+        <set-property propertyName="qpname" value="#[message.inboundProperties.'http.query.params'.name]" doc:name="Property"/>
+    </sub-flow>
+</mule>
